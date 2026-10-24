@@ -1,0 +1,270 @@
+import java.util.Scanner;
+
+public class Main {
+
+    // Risk thresholds
+    private static final int BLOCK_THRESHOLD = 80;
+    private static final int THROTTLE_THRESHOLD = 50;
+    private static final int MONITOR_THRESHOLD = 30;
+
+    // Maximum risk score
+    private static final int MAX_RISK_SCORE = 100;
+
+    /*
+     * Calculates the security risk score.
+     */
+    public static int calculateRiskScore(
+            int requestsPerMinute,
+            int failedLogins,
+            int uniqueEndpoints,
+            int suspiciousRequests) {
+
+        int riskScore = 0;
+
+        // 1. Request rate analysis
+        if (requestsPerMinute > 1000) {
+            riskScore += 40;
+        } else if (requestsPerMinute > 500) {
+            riskScore += 30;
+        } else if (requestsPerMinute > 200) {
+            riskScore += 15;
+        }
+
+        // 2. Failed login analysis
+        if (failedLogins > 50) {
+            riskScore += 30;
+        } else if (failedLogins > 20) {
+            riskScore += 20;
+        } else if (failedLogins > 10) {
+            riskScore += 10;
+        }
+
+        // 3. Endpoint behavior analysis
+        if (uniqueEndpoints <= 2 && requestsPerMinute > 300) {
+            riskScore += 15;
+        }
+
+        // 4. Suspicious request analysis
+        if (suspiciousRequests > 50) {
+            riskScore += 20;
+        } else if (suspiciousRequests > 20) {
+            riskScore += 10;
+        }
+
+        // Never allow score above 100
+        return Math.min(riskScore, MAX_RISK_SCORE);
+    }
+
+    /*
+     * Determines the security action.
+     */
+    public static String getSecurityAction(int riskScore) {
+
+        if (riskScore >= BLOCK_THRESHOLD) {
+            return "BLOCK";
+        } else if (riskScore >= THROTTLE_THRESHOLD) {
+            return "THROTTLE";
+        } else if (riskScore >= MONITOR_THRESHOLD) {
+            return "MONITOR";
+        } else {
+            return "ALLOW";
+        }
+    }
+
+    /*
+     * Displays reasons for the calculated risk.
+     */
+    public static void showRiskReasons(
+            int requestsPerMinute,
+            int failedLogins,
+            int uniqueEndpoints,
+            int suspiciousRequests) {
+
+        System.out.println("\nRisk Factors:");
+
+        boolean riskFound = false;
+
+        if (requestsPerMinute > 1000) {
+            System.out.println("• Extremely high request rate");
+            riskFound = true;
+        } else if (requestsPerMinute > 500) {
+            System.out.println("• High request rate");
+            riskFound = true;
+        } else if (requestsPerMinute > 200) {
+            System.out.println("• Above-normal request rate");
+            riskFound = true;
+        }
+
+        if (failedLogins > 50) {
+            System.out.println("• Excessive failed login attempts");
+            riskFound = true;
+        } else if (failedLogins > 20) {
+            System.out.println("• High number of failed logins");
+            riskFound = true;
+        } else if (failedLogins > 10) {
+            System.out.println("• Repeated failed login attempts");
+            riskFound = true;
+        }
+
+        if (uniqueEndpoints <= 2 && requestsPerMinute > 300) {
+            System.out.println(
+                "• Repeated access to a small number of endpoints"
+            );
+            riskFound = true;
+        }
+
+        if (suspiciousRequests > 50) {
+            System.out.println("• Large number of suspicious requests");
+            riskFound = true;
+        } else if (suspiciousRequests > 20) {
+            System.out.println("• Suspicious request activity detected");
+            riskFound = true;
+        }
+
+        if (!riskFound) {
+            System.out.println("• No significant risk factors detected");
+        }
+    }
+
+    /*
+     * Displays recommended action.
+     */
+    public static void showRecommendation(
+            String action,
+            int riskScore) {
+
+        System.out.println("\nRecommended Response:");
+
+        switch (action) {
+
+            case "BLOCK":
+                System.out.println(
+                    "BLOCK the client temporarily."
+                );
+                System.out.println(
+                    "Generate a high-priority security alert."
+                );
+                break;
+
+            case "THROTTLE":
+                System.out.println(
+                    "Reduce the client's request rate."
+                );
+                System.out.println(
+                    "Continue monitoring the client."
+                );
+                break;
+
+            case "MONITOR":
+                System.out.println(
+                    "Allow the request but increase monitoring."
+                );
+                break;
+
+            default:
+                System.out.println(
+                    "Allow the request normally."
+                );
+        }
+    }
+
+    /*
+     * Main method
+     */
+    public static void main(String[] args) {
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("==========================================");
+        System.out.println("       SENTINEL SECURITY PLATFORM");
+        System.out.println("   Real-Time API Abuse Detection System");
+        System.out.println("==========================================");
+
+        // Client information
+        System.out.print("\nEnter Client IP Address: ");
+        String ipAddress = scanner.nextLine();
+
+        System.out.print("Enter API Endpoint: ");
+        String endpoint = scanner.nextLine();
+
+        System.out.print("Enter HTTP Method (GET/POST/PUT/DELETE): ");
+        String method = scanner.nextLine().toUpperCase();
+
+        // Traffic information
+        System.out.print("\nEnter Requests Per Minute: ");
+        int requestsPerMinute = scanner.nextInt();
+
+        System.out.print("Enter Failed Login Attempts: ");
+        int failedLogins = scanner.nextInt();
+
+        System.out.print("Enter Number of Unique Endpoints Accessed: ");
+        int uniqueEndpoints = scanner.nextInt();
+
+        System.out.print("Enter Number of Suspicious Requests: ");
+        int suspiciousRequests = scanner.nextInt();
+
+        // Calculate risk
+        int riskScore = calculateRiskScore(
+                requestsPerMinute,
+                failedLogins,
+                uniqueEndpoints,
+                suspiciousRequests
+        );
+
+        // Determine action
+        String action = getSecurityAction(riskScore);
+
+        // Result
+        System.out.println("\n==========================================");
+        System.out.println("             SECURITY ANALYSIS");
+        System.out.println("==========================================");
+
+        System.out.println("Client IP        : " + ipAddress);
+        System.out.println("API Endpoint     : " + endpoint);
+        System.out.println("HTTP Method      : " + method);
+
+        System.out.println("------------------------------------------");
+
+        System.out.println(
+            "Requests/Minute  : " + requestsPerMinute
+        );
+
+        System.out.println(
+            "Failed Logins    : " + failedLogins
+        );
+
+        System.out.println(
+            "Unique Endpoints : " + uniqueEndpoints
+        );
+
+        System.out.println(
+            "Suspicious Req.  : " + suspiciousRequests
+        );
+
+        System.out.println("------------------------------------------");
+
+        System.out.println(
+            "Risk Score       : " + riskScore + "/100"
+        );
+
+        System.out.println(
+            "Security Action  : " + action
+        );
+
+        showRiskReasons(
+                requestsPerMinute,
+                failedLogins,
+                uniqueEndpoints,
+                suspiciousRequests
+        );
+
+        showRecommendation(
+                action,
+                riskScore
+        );
+
+        System.out.println("==========================================");
+
+        scanner.close();
+    }
+}
